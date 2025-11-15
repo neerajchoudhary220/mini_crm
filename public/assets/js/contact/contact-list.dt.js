@@ -12,12 +12,12 @@ function dbTble() {
       },
     },
     columns: [
-      { name: "idx", data: "idx", title: "ID" },
-      { name: "name", data: "name", title: "Name" },
-      { name: "email", data: "email", title: "Email" },
-      { name: "phone", data: "phone", title: "Phone" },
-      { name: "gender", data: "gender", title: "Gender" },
-      { name: "action", data: "action", title: "Action", orderable: false },
+      { name: "idx", data: "idx" },
+      { name: "name", data: "name" },
+      { name: "email", data: "email" },
+      { name: "phone", data: "phone" },
+      { name: "gender", data: "gender" },
+      { name: "action", data: "action", orderable: false },
     ],
     order: [1, "desc"],
     createdRow: function (row, data, dataIndex) {

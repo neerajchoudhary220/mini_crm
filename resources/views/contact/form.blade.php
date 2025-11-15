@@ -11,7 +11,6 @@
             <div class="modal-body">
                 <div class="row">
                     <form id="contactForm" enctype="multipart/form-data">
-
                         <input type="hidden" id="contactId">
 
                         <!-- HEADER -->
@@ -90,17 +89,15 @@
                             </div>
 
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Custom Field</label>
 
-                        <!-- CUSTOM FIELDS -->
-                        <div class="mt-4" id="customFieldsContainer">
-                            <h5 class="fw-bold">Additional Details</h5>
-                            <p class="text-muted">These are dynamic custom fields added by admin</p>
-                            <hr>
+                            <select id="customFieldSelect" class="form-select multiple" style="width: 100%"></select>
 
-                            <div id="customFieldsArea">
-                                <!-- dynamic fields come from jQuery -->
-                            </div>
+                            <small class="text-muted">Search custom fields using Select2</small>
                         </div>
+
+                        <div id="dynamicFieldsArea"></div>
 
                         <!-- ACTION BUTTONS -->
                         <div class="mt-4 text-end">

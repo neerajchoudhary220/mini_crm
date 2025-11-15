@@ -8,6 +8,7 @@ use App\Models\ContactCustomField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Blade;
 
 class CustomFieldController extends Controller
 {
@@ -16,6 +17,32 @@ class CustomFieldController extends Controller
         return view('custom-field.index');
     }
 
+    public function fields(Request $request)
+    {
+        if ($request->ajax()) {
+            $page   = $request->page ?? 1;
+            $limit  = 10;
+            $offset = ($page - 1) * $limit;
+            $query = ContactCustomField::query();
+            $items = self::listFilter($request)->orderBy('id', 'DESC')
+                ->offset($offset)
+                ->limit($limit)
+                ->get();
+            $totalCount = $query->count();
+
+            return response()->json([
+                "results" => $items->map(function ($item) {
+                    return [
+                        "id" => $item->id,
+                        "text" => $item->field_label . " (" . $item->field_name . ")"
+                    ];
+                }),
+                "pagination" => [
+                    "more" => ($offset + $limit) < $totalCount
+                ]
+            ]);
+        }
+    }
     public function list(Request $request)
     {
         if ($request->ajax()) {
@@ -37,8 +64,16 @@ class CustomFieldController extends Controller
             $idx = 1;
             foreach ($data as $d) {
                 $d->idx = $idx;
-                $d->action = view('custom-field.action', compact('d'))->render();
-                $d->created_at = Carbon::parse($d->created_at)->format('d-M-Y');
+                $d->action = Blade::render(
+                    '<x-action-buttons :edit-url="$editUrl" :delete-url="$deleteUrl" :data="$data" />',
+                    [
+                        'editUrl' => route('custom.fields.update', $d),
+                        'deleteUrl' => route('custom.fields.destroy', $d),
+                        'data' => $d
+                    ]
+                );
+
+                $d->created_at_display = Carbon::parse($d->created_at)->format('d-M-Y');
                 $idx++;
             }
             return [
@@ -51,6 +86,10 @@ class CustomFieldController extends Controller
     }
 
 
+    public function show(ContactCustomField $contactCustomField)
+    {
+        return response()->json($contactCustomField);
+    }
     public function store(CustomFieldStoreRequest $customFieldStoreRequest)
     {
         try {

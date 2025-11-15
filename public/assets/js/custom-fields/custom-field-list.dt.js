@@ -12,13 +12,22 @@ function customFieldDT() {
       url: customFieldListUrl,
     },
     columns: [
-      { name: "idx", data: "idx", title: "ID" },
-      { name: "field_label", data: "field_label", title: "Label" },
-      { name: "field_name", data: "field_name", title: "Name" },
-      { name: "field_type", data: "field_type", title: "Type" },
-      { name: "options", data: "options", title: "Option" },
-      { name: "created_at", data: "created_at", title: "Created At" },
-      { name: "action", data: "action", title: "Action", orderable: false },
+      { name: "idx", data: "idx" },
+      { name: "field_label", data: "field_label" },
+      { name: "field_name", data: "field_name" },
+      { name: "field_type", data: "field_type" },
+      { name: "options", data: "options" },
+      {
+        name: "created_at",
+        data: "created_at_display",
+        render: function (data, type, row) {
+          if (type === "sort") {
+            return row.created_at;
+          }
+          return data;
+        },
+      },
+      { name: "action", data: "action", orderable: false },
     ],
     order: [5, "desc"],
     createdRow: function (row, data, dataIndex) {
@@ -42,6 +51,7 @@ function customFieldDT() {
       //click to edit button
       $(".edt-btn").on("click", function () {
         const fieldData = $(this).data("values");
+        console.log(fieldData);
         Object.entries(fieldData).forEach(([key, value]) => {
           putCustomFieldFormValue(key, value);
         });

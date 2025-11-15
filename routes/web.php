@@ -34,6 +34,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/store', 'store')->name('.store');
         Route::delete('/{contactCustomField}', 'destroy')->name('.destroy');
         Route::post('/update/{contactCustomField}', 'update')->name('.update');
+        Route::get('/items', 'fields')->name('.items');
+        Route::get('/show/{contactCustomField?}', 'show')->name('.show');
     });
 
     Route::get('logout', function () {

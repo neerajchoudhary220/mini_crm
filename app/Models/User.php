@@ -45,4 +45,24 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function documents()
+    {
+        return $this->morphMany(Media::class, 'mediable');
+    }
+
+    public function profileImage()
+    {
+        return $this->belongsTo(Media::class, 'profile_image_id');
+    }
+
+    public function customValues()
+    {
+        return $this->hasMany(ContactCustomFieldValue::class);
+    }
+
+    public function mergedIntoContact()
+    {
+        return $this->belongsTo(Contact::class, 'merged_into');
+    }
 }
