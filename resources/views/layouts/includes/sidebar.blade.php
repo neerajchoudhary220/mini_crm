@@ -6,13 +6,14 @@
     <ul class="nav flex-column mt-3">
 
         <li class="nav-item">
-            <a class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}" href="/dashboard">
+            <a href="{{route('dashboard')}}"
+                @class(['nav-link','active'=>request()->is('/')])>
                 <i class="fa fa-home me-2"></i> Dashboard
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link {{ request()->is('contacts*') ? 'active' : '' }}" href="/contacts">
+            <a @class(['nav-link','active'=>request()->is('contact')]) href="{{ route('contact') }}">
                 <i class="fa fa-users me-2"></i> Contacts
             </a>
         </li>
@@ -24,7 +25,7 @@
         </li>
 
         <li class="nav-item mt-3">
-            <a class="nav-link text-danger" href="/logout">
+            <a class="nav-link text-danger" href="{{route('logout')}}">
                 <i class="fa fa-right-from-bracket me-2"></i> Logout
             </a>
         </li>
