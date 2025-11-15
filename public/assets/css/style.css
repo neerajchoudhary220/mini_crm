@@ -1,0 +1,169 @@
+        body {
+            overflow-x: hidden;
+            padding-top: 70px;
+
+            /* adjust based on navbar height */
+
+        }
+
+        #sidebar {
+            min-width: 220px;
+            max-width: 220px;
+            min-height: 100vh;
+            background: #212529;
+            color: #fff;
+            transition: all 0.3s;
+        }
+
+        /* For mobile (less than 768px width)
+        @media (max-width: 767.98px) {
+            #sidebar {
+                min-width: auto;
+                max-width: 100%;
+            }
+        } */
+
+        #sidebar .nav-link {
+            color: #adb5bd;
+        }
+
+        #sidebar .nav-link.active,
+        #sidebar .nav-link:hover {
+            color: #fff;
+            background: #0dcaf0;
+            border-radius: .375rem;
+        }
+
+        #content {
+            transition: margin-left 0.3s;
+        }
+
+        #sidebar.collapsed {
+            margin-left: -220px;
+        }
+
+
+
+        /* Mobile adjustments */
+        @media (max-width: 767.98px) {
+            #sidebar {
+                min-width: 80px;
+                max-width: 80px;
+            }
+
+            /* Collapsed sidebar on mobile */
+            #sidebar.collapsed {
+                margin-left: -80px;
+                /* hide full width */
+            }
+        }
+
+        label.required::after {
+            content: " *";
+            color: red;
+        }
+
+        label.optional::after {
+            content: " (Optional)";
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        /* Default table styling */
+        .dt-tbl {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* Mobile view: Convert table into card format */
+        @media (max-width: 767px) {
+            .dt-tbl thead {
+                display: none;
+                /* Hide headers */
+            }
+
+            .dt-tbl tbody tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+                background: #fff;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            .dt-tbl tbody tr td {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 10px;
+                font-size: 14px;
+                border: none;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .dt-tbl tbody tr td:last-child {
+                border-bottom: none;
+            }
+
+            .dt-tbl tbody tr td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: #333;
+                margin-right: 10px;
+                /* spacing between label & value */
+            }
+        }
+
+
+
+        .total-box {
+            width: fit-content;
+            padding: 5px;
+            /* background-color: var(--bs-info-bg-subtle); */
+        }
+
+        /*----------- Dashboard expense card-------------------*/
+        .expense-card {
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: 150px;
+        }
+
+        .expense-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .expense-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .expense-category {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .expense-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 575.98px) {
+            .expense-category {
+                font-size: 0.8rem;
+            }
+
+            .expense-amount {
+                font-size: 1rem;
+            }
+        }
+
+        /*--------------Bar Chart----------------*/
+        #barChart {
+            max-width: 100%;
+            margin: auto;
+        }

@@ -13,13 +13,13 @@
         </li>
 
         <li class="nav-item">
-            <a @class(['nav-link','active'=>request()->is('contact')]) href="{{ route('contact') }}">
+            <a @class(['nav-link','active'=>request()->is('contacts')]) href="{{ route('contacts') }}">
                 <i class="fa fa-users me-2"></i> Contacts
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link {{ request()->is('custom-fields*') ? 'active' : '' }}" href="/custom-fields-page">
+            <a @class(['nav-link','active'=>request()->is('custom-fields')]) href="{{route('custom.fields')}}">
                 <i class="fa fa-table me-2"></i> Custom Fields
             </a>
         </li>

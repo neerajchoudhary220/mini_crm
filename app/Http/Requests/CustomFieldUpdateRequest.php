@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class CustomFieldUpdateRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $customField = $this->route('contactCustomField');
+        return [
+            'field_label' => ['required', 'min:3'],
+            'field_name' => [
+                'required',
+                'min:3',
+                Rule::unique('contact_custom_fields', 'field_name')->ignore($customField->id)
+            ],
+            'field_type' => ['required', 'in:text,textarea,number,date,email,select'],
+            'options' => [
+                'nullable',
+                function ($attribute, $value, $fail) {
+                    if ($this->field_type === 'select' && !empty($value)) {
+                        if (!preg_match('/^[^,\s][^,]*(?:,[^,\s][^,]*)*$/', $value)) {
+                            return $fail('Options must be comma separated without empty values.');
+                        }
+                    }
+                }
+            ],
+        ];
+    }
+}
