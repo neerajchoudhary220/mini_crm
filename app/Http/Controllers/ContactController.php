@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ContactStoreRequest;
 use App\Http\Requests\ContactUpdateRequest;
+use App\Http\Requests\MergeRequest;
 use App\Http\Resources\ContactResource;
 use App\Models\Contact;
 use App\Models\ContactCustomFieldValue;
+use App\Models\ContactMergeLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -141,14 +143,16 @@ class ContactController extends Controller
             $idx = 1;
             foreach ($data as $d) {
                 $d->idx = $idx;
+                $d->name = $d->is_active ? $d->name : "<i class='bi bi-check-circle-fill text-success' title='Merged'></i> <span>$d->name</span>";
                 $d->action = Blade::render(
                     '<x-action-buttons  :edit-url="$editUrl" :update-url="$updateUrl" 
                      :merge-simple-list-url="$mergeSimpleListUrl" :contact-id="$contactId"/>',
                     [
                         'editUrl' => route('contacts.edit', $d),
                         'updateUrl' => route('contacts.update', $d),
-                        'mergeSimpleListUrl' => route('contacts.simplelist'),
-                        'contactId' => $d->id,
+                        'mergeSimpleListUrl' => $d->is_active ? route('contacts.simplelist', $d->id) : null,
+                        'contactId' => $d->is_active ?  $d->id : null,
+
                     ]
                 );
 
@@ -164,11 +168,43 @@ class ContactController extends Controller
         }
     }
 
-    public function simpleList()
+    public function simpleList(Request $request)
     {
-        return Contact::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'email']);
+        if ($request->ajax()) {
+            $page   = $request->page ?? 1;
+            $limit  = 10;
+            $offset = ($page - 1) * $limit;
+            $query = Contact::query();
+            $q = $request->get('q');
+            $items = $query->forActive()
+                ->when($request->id, function ($contact) use ($request) {
+                    $contact->where('id', '!=', $request->id);
+                })
+                ->when($q, function ($contact) use ($q) {
+                    $contact->where(function ($sub) use ($q) {
+                        $sub->where('name', 'like', "%$q%")
+                            ->orWhere('email', 'like', "%$q%")
+                            ->orWhere('phone', 'like', "%$q%");
+                    });
+                })
+                ->orderBy('id', 'DESC')
+                ->offset($offset)
+                ->limit($limit)
+                ->get();
+
+            $totalCount = $query->forActive()->count();
+            return response()->json([
+                "results" => $items->map(function ($item) {
+                    return [
+                        "id" => $item->id,
+                        "text" => $item->name . " (" . $item->email . ")"
+                    ];
+                }),
+                "pagination" => [
+                    "more" => ($offset + $limit) < $totalCount
+                ]
+            ]);
+        }
     }
 
     public function listFilter($request)
@@ -176,7 +212,9 @@ class ContactController extends Controller
         $request = collect($request);
         $search = $request->get('search');
         $query = Contact::query();
-        return $query->when($search, fn($contact) => $contact->where('name', 'like', '%' . $search['value'] . '%'))
+
+        return $query->forActive()
+            ->when($search, fn($contact) => $contact->where('name', 'like', '%' . $search['value'] . '%'))
             ->orWhere('email', 'like', '%' . $search['value'] . '%')
             ->orWhere('phone', 'like', '%' . $search['value'] . '%');
     }
@@ -186,62 +224,236 @@ class ContactController extends Controller
         return new ContactResource($contact->load(['media', 'customFieldValues.customField']));
     }
 
-    public function merge(Request $request)
+    private function mergeContacts(Contact $master, Contact $secondary, string $policy = "keep_master",): array
     {
-        try {
-            $primaryId = $request->primary_id;
-            $secondaryId = $request->secondary_id;
-            $masterType = $request->master; // primary or secondary
+        if ($master->id === $secondary->id) {
+            throw new \Exception('Cannot merge the same contact.');
+        }
+        return DB::transaction(function () use ($master, $secondary, $policy) {
+            $log = [
+                'master_id' => $master->id,
+                'secondary_id' => $secondary->id,
+                'merged_fields' => [],
+                'conflicts' => [],
+                'media_copied' => [],
+                'timestamp' => now()->toDateTimeString(),
+            ];
+            //Standard fields (name,email,phone,gender)
+            $standardFields = ['name', 'email', 'phone', 'gender'];
+            foreach ($standardFields as $field) {
+                $mVal = $master->{$field};
+                $sVal = $secondary->{$field};
+                // copy missing fields
+                if ((empty($mVal) || $mVal === null) && !empty($sVal)) {
+                    $master->{$field} = $sVal;
+                    $log['merged_fields'][] = "copied_field:{$field}";
+                } elseif (!empty($mVal) && !empty($sVal) && $mVal !== $sVal) {
+                    // conflict - handle specially for email & phone
+                    if ($policy === 'append' && in_array($field, ['email', 'phone'])) {
+                        // Avoid duplicate when already present in master
+                        $masterParts = array_filter(array_map('trim', preg_split('/[;|,]/', (string)$mVal)));
+                        $sParts = array_filter(array_map('trim', preg_split('/[;|,]/', (string)$sVal)));
+                        foreach ($sParts as $p) {
+                            if (!in_array($p, $masterParts) && $p !== '') {
+                                $masterParts[] = $p;
+                            }
+                        }
 
-            $primary = Contact::with('customFieldValues')->findOrFail($primaryId);
-            $secondary = Contact::with('customFieldValues')->findOrFail($secondaryId);
-            // Determine master
-            $master = $masterType == 'primary' ? $primary : $secondary;
-            $slave  = $masterType == 'primary' ? $secondary : $primary;
-            DB::beginTransaction();
-            foreach ($slave->customFieldValues as $field) {
-                $existing = $master->customFieldValues
-                    ->where('custom_field_id', $field->custom_field_id)
-                    ->first();
-
-                if (!$existing) {
-                    // Copy custom field to master
-                    ContactCustomFieldValue::create([
-                        'contact_id' => $master->id,
-                        'custom_field_id' => $field->custom_field_id,
-                        'value' => $field->value
-                    ]);
+                        $newVal = implode(';', $masterParts);
+                        $master->{$field} = $newVal;
+                        $log['merged_fields'][] = "appended_field:{$field}";
+                    } else {
+                        // keep master but log conflict
+                        $log['conflicts'][] = "{$field}:master_kept";
+                    }
                 }
             }
-            $masterProfile = $master->media()->where('tag', 'profile_image')->first();
-            $slaveProfile = $slave->media()->where('tag', 'profile_image')->first();
+            $master->save();
 
-            if (!$masterProfile && $slaveProfile) {
-                $new_file = Storage::copy($slaveProfile->file_path, $slaveProfile->file_path . '_copy');
-                logger()->info($new_file);
-                $master->media()->create([
-                    'file_name' => $slaveProfile->file_name,
-                    'file_path' => $slaveProfile->file_path,
-                    'mime_type' => $slaveProfile->mime_type,
-                    'tag' => 'profile_image'
-                ]);
+            //Custom fields
+            $secondaryValues = $secondary->customFieldValues()->get();
+            foreach ($secondaryValues as $sv) {
+                $existing = $master->customFieldValues()->where('custom_field_id', $sv->custom_field_id)->first();
+
+                if (!$existing) {
+                    // Duplicate the value for master (preserve secondary)
+                    ContactCustomFieldValue::create([
+                        'contact_id' => $master->id,
+                        'custom_field_id' => $sv->custom_field_id,
+                        'value' => $sv->value,
+                    ]);
+                    $log['merged_fields'][] = "custom_added:" . $sv->custom_field_id;
+                } else {
+                    if ((string)$existing->value !== (string)$sv->value) {
+                        if ($policy === 'append') {
+                            // append without duplicates
+                            $existingParts = array_filter(array_map('trim', explode(' | ', (string)$existing->value)));
+                            $svParts = array_filter(array_map('trim', explode(' | ', (string)$sv->value)));
+
+                            foreach ($svParts as $p) {
+                                if (!in_array($p, $existingParts) && $p !== '') {
+                                    $existingParts[] = $p;
+                                }
+                            }
+                            $existing->value = implode(' | ', $existingParts);
+                            $existing->save();
+                            $log['merged_fields'][] = "custom_appended:" . $sv->custom_field_id;
+                        } else {
+                            // keep master value
+                            $log['conflicts'][] = "custom_{$sv->custom_field_id}:master_kept";
+                        }
+                    }
+                }
             }
 
-            $slave->merged_into = $master->id;
-            $slave->save();
+            // Media: duplicate secondary media and assign duplicates to master (so no data lost)
+            // Assumes media relation name 'media' and media has file_path, disk, file_name, mime_type, size, tag/collection_name
+            $secondaryMedias = $secondary->media()->get();
+            foreach ($secondaryMedias as $m) {
+                try {
+                    // $disk = $m->disk ?? 'public';
+                    $oldPath = $m->file_path; // adjust to your column name
+                    if ($oldPath && Storage::exists($oldPath)) {
+                        $folder = pathinfo($oldPath, PATHINFO_DIRNAME);
+                        $name = pathinfo($oldPath, PATHINFO_BASENAME);
+                        $newName = pathinfo($name, PATHINFO_FILENAME) . '_copy_' . time() . '.' . pathinfo($name, PATHINFO_EXTENSION);
+                        $newPath = $folder . '/' . $newName;
 
-            DB::commit();
+                        Storage::copy($oldPath, $newPath);
+
+                        // create new media record for master (duplicate)
+                        $newMedia = $master->media()->create([
+                            'file_name' => $m->file_name,
+                            'file_path' => $newPath,
+                            'mime_type' => $m->mime_type,
+                            'tag' => ($m->tag),
+                        ]);
+
+                        $log['media_copied'][] = $newMedia->id;
+                    } else {
+                        // If file missing just re-link metadata (rare)
+                        $newMedia = $master->media()->create($m->toArray());
+                        $log['media_copied'][] = $newMedia->id;
+                    }
+                } catch (\Throwable $ex) {
+                    // do not fail entire merge just log
+                    $log['media_errors'][] = "media_copy_failed:{$m->id} " . $ex->getMessage();
+                }
+            }
+
+            //Mark secondary as merged/inactive and preserve pointer
+            $secondary->is_active = false;
+            $secondary->merged_into = $master->id;
+            $secondary->save();
+
+            //Save merge log (snapshot + merged details)
+            $mergedSnapshot = [
+                'master' => $master->toArray(),
+                'secondary' => $secondary->toArray(),
+                'secondary_custom_values' => $secondaryValues->map->toArray(),
+                'merged_fields' => $log['merged_fields'],
+                'conflicts' => $log['conflicts'],
+                'media_copied' => $log['media_copied'] ?? [],
+            ];
+
+            $mergeLog = ContactMergeLog::create([
+                'master_contact_id' => $master->id,
+                'merged_contact_id' => $secondary->id,
+                'merged_data' => $mergedSnapshot,
+            ]);
+
+            $log['merge_log_id'] = $mergeLog->id;
+            return $log;
+        });
+    }
+    public function merge(MergeRequest $mergeRequest)
+    {
+        try {
+            $primaryId = (int)$mergeRequest->primary_id;
+            $secondaryId = (int)$mergeRequest->secondary_id;
+            $masterChoice = $mergeRequest->master;
+            $policy = $mergeRequest->policy ?? 'keep_master';
+
+            $primary = Contact::with(['customFieldValues', 'media'])->findOrFail($primaryId);
+            $secondary = Contact::with(['customFieldValues', 'media'])->findOrFail($secondaryId);
+
+            // Determine master & slave
+            $master = $masterChoice === 'primary' ? $primary : $secondary;
+            $slave  = $masterChoice === 'primary' ? $secondary : $primary;
+
+            if ($master->id === $slave->id) {
+                return response()->json(['status' => 'failed', 'message' => 'Select two different contacts'], 400);
+            }
+            $log = $this->mergeContacts($master, $secondary, $policy);
             return response()->json([
                 'status' => 'success',
-                'message' => 'Contacts merged successfully'
+                'message' => 'Contacts merged successfully',
+                'data' => $log
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            logger()->error($e->getMessage());
+            logger()->error('Merge error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'failed',
-                'message' => $e->getMessage(),
+                'message' => $e->getMessage()
             ], 500);
         }
     }
+    // public function merge(Request $request)
+    // {
+    //     try {
+    //         $primaryId = $request->primary_id;
+    //         $secondaryId = $request->secondary_id;
+    //         $masterType = $request->master; // primary or secondary
+
+    //         $primary = Contact::with('customFieldValues')->findOrFail($primaryId);
+    //         $secondary = Contact::with('customFieldValues')->findOrFail($secondaryId);
+    //         // Determine master
+    //         $master = $masterType == 'primary' ? $primary : $secondary;
+    //         $slave  = $masterType == 'primary' ? $secondary : $primary;
+    //         DB::beginTransaction();
+    //         foreach ($slave->customFieldValues as $field) {
+    //             $existing = $master->customFieldValues
+    //                 ->where('custom_field_id', $field->custom_field_id)
+    //                 ->first();
+
+    //             if (!$existing) {
+    //                 // Copy custom field to master
+    //                 ContactCustomFieldValue::create([
+    //                     'contact_id' => $master->id,
+    //                     'custom_field_id' => $field->custom_field_id,
+    //                     'value' => $field->value
+    //                 ]);
+    //             }
+    //         }
+    //         $masterProfile = $master->media()->where('tag', 'profile_image')->first();
+    //         $slaveProfile = $slave->media()->where('tag', 'profile_image')->first();
+
+    //         if (!$masterProfile && $slaveProfile) {
+    //             $new_file = Storage::copy($slaveProfile->file_path, $slaveProfile->file_path . '_copy');
+    //             logger()->info($new_file);
+    //             $master->media()->create([
+    //                 'file_name' => $slaveProfile->file_name,
+    //                 'file_path' => $slaveProfile->file_path,
+    //                 'mime_type' => $slaveProfile->mime_type,
+    //                 'tag' => 'profile_image'
+    //             ]);
+    //         }
+
+    //         $slave->merged_into = $master->id;
+    //         $slave->save();
+
+    //         DB::commit();
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Contacts merged successfully'
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         logger()->error($e->getMessage());
+    //         return response()->json([
+    //             'status' => 'failed',
+    //             'message' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 }

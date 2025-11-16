@@ -42,4 +42,9 @@ class Contact extends Model
     {
         return $this->hasMany(ContactCustomFieldValue::class, 'contact_id');
     }
+
+    public function scopeForActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

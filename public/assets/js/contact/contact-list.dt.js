@@ -1,6 +1,9 @@
 let contact_dt_tbl = "";
+let simpleListUrl = "";
 const mergeModal = $("#merge-modal");
 const primaryContact = $("#primaryContactId");
+const mergeContactSelect = $("#mergeContactSelect");
+
 function dbTble() {
   contact_dt_tbl = $("#contact-dt-tbl").DataTable({
     serverSide: true,
@@ -48,13 +51,21 @@ function dbTble() {
       });
       //Merge Contact
       $(".merge-btn").on("click", function () {
-        const simpleListUrl = $(this).data("simple-list-url");
         primaryContact.val($(this).data("contact-id"));
+        simpleListUrl = $(this).data("simple-list-url");
         fetchSimpleList(simpleListUrl);
       });
     },
   });
 }
+function reloadContactTable() {
+  contact_dt_tbl.destroy();
+  dbTble();
+}
+
+$(document).ready(function () {
+  dbTble();
+});
 
 function editContact(editContactUrl) {
   $.ajax({
@@ -68,6 +79,7 @@ function editContact(editContactUrl) {
       $(`input[name='gender'][value=${data.gender}]`).prop("checked", true);
       $("#previewImage").attr("src", data.profile_image);
       $("#dynamicFieldsArea").html("");
+
       customFieldSelect.val(null).trigger("change");
       let selected = [];
       data.custom_fields.forEach((field) => {
@@ -85,52 +97,92 @@ function editContact(editContactUrl) {
 }
 
 function fetchSimpleList(simpleListUrl) {
-  // $("#primaryContactId").val(id);
-  $("#mergeContactSelect").empty();
+  mergeModal.modal("show");
+  //Fetch contact list with pagination using select2
+  mergeContactSelect.select2({
+    multiple: false,
+    placeholder: "Search Contact",
+    minimumInputLength: 1,
+    width: "100%",
+    dropdownParent: mergeContactSelect.parent(),
+    ajax: {
+      url: simpleListUrl,
+      dataType: "json",
+      delay: 250,
+      data: function (params) {
+        return {
+          q: params.term, // search term
+          page: params.page || 1,
+        };
+      },
+      processResults: function (data, params) {
+        params.page = params.page || 1;
 
-  $.ajax({
-    url: simpleListUrl,
-    method: "GET",
-    success: function (res) {
-      res.forEach((c) => {
-        $("#mergeContactSelect").append(
-          `<option value="${c.id}">${c.name} - ${c.email}</option>`
-        );
-      });
-    },
-    error: function (error) {
-      console.error(error);
+        return {
+          results: data.results,
+          pagination: {
+            more: data.pagination.more,
+          },
+        };
+      },
     },
   });
-  mergeModal.modal("show");
 }
 
 function mergeContacts() {
-  $.ajax({
-    url: mergeUrl,
-    method: "POST",
-    data: {
-      primary_id: primaryContact.val(),
-      secondary_id: $("#mergeContactSelect").val(),
-      master: $("input[name='master']:checked").val(),
-      _token: $('meta[name="csrf-token"]').attr("content"),
-    },
-    success: function (res) {
-      showToast(res.message, "success");
-      mergeModal.modal("hide");
-      reloadContactTable();
-    },
-    error: function () {
-      showToast("Something went wrong!", "danger");
-    },
+  const primaryId = primaryContact.val();
+  const secondaryId = mergeContactSelect.val();
+  const master = $("input[name='master']:checked").val();
+  const policy = $("#mergePolicy").val();
+
+  if (!secondaryId) {
+    showToast("Select a contact to merge", "danger");
+    return;
+  }
+  if (primaryId === secondaryId) {
+    showToast("Cannot merge same contact", "danger");
+    return;
+  }
+
+  Swal.fire({
+    title: "Are you sure you want to merge these contacts?",
+    text:
+      "This action will mark the secondary contact as inactive and copy data into the master. Data is preserved in the merge log.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#dc3545",
+    cancelButtonColor: "#0dcaf0",
+    confirmButtonText: "Yes",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+        url: mergeUrl, // set mergeUrl variable in blade: route('contacts.merge')
+        method: "POST",
+        data: {
+          primary_id: primaryId,
+          secondary_id: secondaryId,
+          master: master,
+          policy: policy,
+          _token: $('meta[name="csrf-token"]').attr("content"),
+        },
+        beforeSend: function () {
+          $("#btnConfirmMerge").prop("disabled", true).text("Merging...");
+        },
+        success: function (res) {
+          $("#btnConfirmMerge").prop("disabled", false).text("Merge");
+          Swal.fire("Merged!", data.msg, "success");
+          mergeModal.hide();
+          reloadContactTable();
+        },
+        error: function (xhr) {
+          $("#btnConfirmMerge").prop("disabled", false).text("Merge");
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            showToast(xhr.responseJSON.message, "danger");
+          } else {
+            showToast("Merge failed", "danger");
+          }
+        },
+      });
+    }
   });
 }
-
-function reloadContactTable() {
-  contact_dt_tbl.destroy();
-  dbTble();
-}
-
-$(document).ready(function () {
-  dbTble();
-});

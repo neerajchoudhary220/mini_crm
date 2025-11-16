@@ -24,7 +24,9 @@ class CustomFieldController extends Controller
             $limit  = 10;
             $offset = ($page - 1) * $limit;
             $query = ContactCustomField::query();
-            $items = self::listFilter($request)->orderBy('id', 'DESC')
+            $q = $request->q;
+            $items = $query->when($q, fn($custom_field) => $custom_field->where('field_label', 'like', '%' . $q . '%'))
+                ->orderBy('id', 'DESC')
                 ->offset($offset)
                 ->limit($limit)
                 ->get();

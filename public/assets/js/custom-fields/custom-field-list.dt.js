@@ -51,7 +51,6 @@ function customFieldDT() {
       //click to edit button
       $(".edt-btn").on("click", function () {
         const fieldData = $(this).data("values");
-        console.log(fieldData);
         Object.entries(fieldData).forEach(([key, value]) => {
           putCustomFieldFormValue(key, value);
         });
