@@ -60,29 +60,35 @@
 
         <!-- Total Contacts -->
         <div class="col-md-4">
-            <div class="kpi-card gradient-blue">
-                <div class="kpi-label">Total Contacts</div>
-                <div class="kpi-value">{{ $totalContacts }}</div>
-                <i class="bi bi-people-fill kpi-icon"></i>
-            </div>
+            <a href="{{ route('contacts') }}" class="text-decoration-none text-white">
+                <div class="kpi-card gradient-blue">
+                    <div class="kpi-label">Total Contacts</div>
+                    <div class="kpi-value">{{ $totalContacts }}</div>
+                    <i class="bi bi-people-fill kpi-icon"></i>
+                </div>
+            </a>
         </div>
 
         <!-- Total Merged Contacts -->
         <div class="col-md-4">
-            <div class="kpi-card gradient-green">
-                <div class="kpi-label">Merged Contacts</div>
-                <div class="kpi-value">{{ $totalMergedContacts }}</div>
-                <i class="bi bi-link-45deg kpi-icon"></i>
-            </div>
+            <a href="{{ route('contacts') }}" class="text-decoration-none text-white">
+                <div class="kpi-card gradient-green">
+                    <div class="kpi-label">Merged Contacts</div>
+                    <div class="kpi-value">{{ $totalMergedContacts }}</div>
+                    <i class="bi bi-link-45deg kpi-icon"></i>
+                </div>
+            </a>
         </div>
 
         <!-- Total Custom Fields -->
         <div class="col-md-4">
-            <div class="kpi-card gradient-purple">
-                <div class="kpi-label">Custom Fields</div>
-                <div class="kpi-value">{{ $totalCustomFields }}</div>
-                <i class="bi bi-ui-checks-grid kpi-icon"></i>
-            </div>
+            <a href="{{ route('custom.fields') }}" class="text-decoration-none text-white">
+                <div class="kpi-card gradient-purple">
+                    <div class="kpi-label">Custom Fields</div>
+                    <div class="kpi-value">{{ $totalCustomFields }}</div>
+                    <i class="bi bi-ui-checks-grid kpi-icon"></i>
+                </div>
+            </a>
         </div>
 
     </div>

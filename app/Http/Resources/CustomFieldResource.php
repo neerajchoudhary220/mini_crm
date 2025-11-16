@@ -16,9 +16,8 @@ class CustomFieldResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'label' => $this->customField->field_label,
-            'type' => $this->customField->field_type,
-            'options' => $this->customField->options,
+            'field_label' => $this->customField->field_label,
+            'field_type' => $this->customField->field_type,
             'value' => $this->value
         ];
     }

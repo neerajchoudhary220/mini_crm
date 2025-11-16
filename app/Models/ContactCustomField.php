@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ContactCustomField extends Model
 {
-    protected $fillable = ['field_name', 'field_label', 'field_type', 'options', 'created_by'];
+    protected $fillable = ['field_name', 'field_label', 'field_type', 'options'];
     protected $casts = [
         'options' => 'array',
         'is_active' => 'boolean'

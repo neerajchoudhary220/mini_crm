@@ -37,7 +37,7 @@ function dbTble() {
       },
       { name: "action", data: "action", orderable: false },
     ],
-    order: [1, "desc"],
+    order: [5, "desc"],
     createdRow: function (row, data, dataIndex) {
       // Add data-label for each td based on its column title
       $("td", row).each(function (colIndex) {
@@ -46,6 +46,17 @@ function dbTble() {
       });
     },
     drawCallback: function () {
+      //Delete Contact
+      $(".dlt-btn").on("click", function () {
+        confirmDelete({
+          url: $(this).data("url"),
+          text: "You want to delete this contact",
+          onSuccess: function () {
+            reloadContactTable();
+          },
+        });
+      });
+
       //Edit Contact
       $(".edt-btn").on("click", function () {
         resetContactForm();
@@ -81,7 +92,6 @@ $(document).ready(function () {
 function editContact(editContactUrl) {
   formTitle.text("Edit Contact");
   saveBtn.text("Update");
-
   $.ajax({
     url: editContactUrl,
     method: "GET",
@@ -94,7 +104,6 @@ function editContact(editContactUrl) {
       $("#previewImage").attr("src", data.profile_image);
       $("#dynamicFieldsArea").html("");
 
-      customFieldSelect.val(null).trigger("change");
       let selected = [];
       data.custom_fields.forEach((field) => {
         selected.push(field.id);
@@ -185,9 +194,9 @@ function mergeContacts() {
         },
         success: function (res) {
           $("#btnConfirmMerge").prop("disabled", false).text("Merge");
-          Swal.fire("Merged!", data.msg, "success");
+          Swal.fire("Merged!", res.message, "success");
           mergeModal.hide();
-          reloadContactTable();
+          window.location.reload();
         },
         error: function (xhr) {
           $("#btnConfirmMerge").prop("disabled", false).text("Merge");

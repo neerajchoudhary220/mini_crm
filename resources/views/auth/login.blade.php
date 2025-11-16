@@ -55,7 +55,7 @@
                             Remember me
                         </label>
                     </div>
-                    <a href="#" class="text-decoration-none small">Forgot password?</a>
+                    <!-- <a href="#" class="text-decoration-none small">Forgot password?</a> -->
                 </div>
 
                 <!-- Login Button -->

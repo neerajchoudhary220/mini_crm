@@ -67,23 +67,26 @@
     const profilePlaceHolderImgUrl = "{{ asset('assets/img/profile_placeholder.png') }}"
     const formTitle = $("#formTitle")
     const saveBtn = $("#btnSave")
+    const dynamicFieldsArea = $("#dynamicFieldsArea")
 
 
     function resetContactForm() {
+        customFieldSelect.html("");
+        customFieldSelect.val(null).trigger('change');
         contactForm.validate().resetForm();
         contactForm.find('label[class="text-danger small"]').remove();
         contactForm.find(".border-danger").removeClass("border-danger");
         $("#previewImage").attr("src", profilePlaceHolderImgUrl);
+        dynamicFieldsArea.html("")
+
     }
 
     function generateFieldHTML(field, value = "") {
         let html = "";
-
         switch (field.field_type) {
-            case "text":
-            case "email":
-            case "number":
-            case "date":
+            case "Text":
+            case "Email":
+            case "Date":
                 html = `
             <div class="mb-3 dynamic-field" id="field_${field.id}">
                 <label class="form-label">${field.field_label}</label>
@@ -95,7 +98,7 @@
             </div>`;
                 break;
 
-            case "textarea":
+            case "Textarea":
                 html = `
             <div class="mb-3 dynamic-field" id="field_${field.id}">
                 <label class="form-label">${field.field_label}</label>
@@ -105,25 +108,7 @@
             </div>`;
                 break;
 
-            case "select":
-                let options = JSON.parse(field.options);
-                let optionHTML = options
-                    .map(
-                        (o) =>
-                        `<option value="${o}" ${
-                value === o ? "selected" : ""
-              }>${o}</option>`
-                    )
-                    .join("");
 
-                html = `
-            <div class="mb-3 dynamic-field" id="field_${field.id}">
-                <label class="form-label">${field.field_label}</label>
-                <select name="custom[${field.id}]" class="form-select custom-field">
-                    ${optionHTML}
-                </select>
-            </div>`;
-                break;
         }
 
         return html;

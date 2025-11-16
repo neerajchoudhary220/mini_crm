@@ -93,9 +93,11 @@ class ContactController extends Controller
                 $contact->addMedia($contactUpdateRequest->file('document'), 'document');
             }
 
-            //Update custom fields
+            //Delete old data
+            $contact->customFieldValues()->delete();
+
             if ($contactUpdateRequest->custom) {
-                $contactUpdateRequest->custom->delete(); //delete old custom fields
+                //delete old custom fields
                 foreach ($contactUpdateRequest->custom as $fieldId => $value) {
                     ContactCustomFieldValue::create(
                         [
@@ -122,6 +124,15 @@ class ContactController extends Controller
         }
     }
 
+    public function destroy(Contact $contact)
+    {
+        $contact->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Contact deleted successfully'
+        ]);
+    }
+
     public function list(Request $request)
     {
         if ($request->ajax()) {
@@ -145,10 +156,11 @@ class ContactController extends Controller
                 $d->idx = $idx;
                 $d->name = $d->is_active ? $d->name : "<i class='bi bi-check-circle-fill text-success' title='Merged'></i> <span>$d->name</span>";
                 $d->action = Blade::render(
-                    '<x-action-buttons  :edit-url="$editUrl" :update-url="$updateUrl" 
+                    '<x-action-buttons  :edit-url="$editUrl" :update-url="$updateUrl" :delete-url="$deleteUrl" 
                      :merge-simple-list-url="$mergeSimpleListUrl" :contact-id="$contactId" :merge-log-url="$mergeLogUrl"/>',
                     [
                         'editUrl' => route('contacts.edit', $d),
+                        'deleteUrl' => route('contacts.destroy', $d),
                         'updateUrl' => route('contacts.update', $d),
                         'mergeSimpleListUrl' => $d->is_active ? route('contacts.simplelist', $d->id) : null,
                         'contactId' => $d->is_active ?  $d->id : null,

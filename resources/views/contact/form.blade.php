@@ -28,7 +28,7 @@
                     <label class="form-label fw-semibold" for="name">
                         <i class="fa fa-user text-info"></i>Name
                     </label>
-                    <input type="text" class="form-control form-control-lg" name="name" id="name">
+                    <input type="text" class="form-control form-control-lg" placeholder="Enter full name" name="name" id="name">
                 </div>
 
                 <!-- EMAIL -->
@@ -36,7 +36,7 @@
                     <label class="form-label fw-semibold" for="email">
                         <i class="fa fa-envelope text-info"></i> Email
                     </label>
-                    <input type="email" class="form-control form-control-lg" id="email" name="email">
+                    <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="e.g. example@mail.com">
                 </div>
             </div>
 
@@ -46,7 +46,7 @@
                     <label class="form-label fw-semibold" for="phone">
                         <i class="fa fa-phone text-info"></i> Phone
                     </label>
-                    <input type="text" name="phone" class="form-control form-control-lg" id="phone">
+                    <input type="text" name="phone" class="form-control form-control-lg" id="phone" placeholder="e.g. 9876543210">
                 </div>
 
                 <!-- GENDER -->

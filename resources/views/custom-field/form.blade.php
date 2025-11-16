@@ -29,9 +29,9 @@
                     </div>
                 </div>
 
+                <div class="#dynamicFieldsArea">
 
-
-
+                </div>
                 <input type="hidden" id="custom-field-id">
             </div>
 

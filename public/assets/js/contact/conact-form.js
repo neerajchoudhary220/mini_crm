@@ -103,8 +103,14 @@ $(document).ready(function () {
     let fieldId = e.params.data.id;
     $.get(`${customFieldsUrl}/${fieldId}`, function (field) {
       let html = generateFieldHTML(field);
-      $("#dynamicFieldsArea").append(html);
+      dynamicFieldsArea.append(html);
     });
+  });
+
+  //When unselect custom field
+  customFieldSelect.on("select2:unselect", function (e) {
+    let fieldId = e.params.data.id;
+    dynamicFieldsArea.find(`#field_${fieldId}`).remove();
   });
 
   //validate form

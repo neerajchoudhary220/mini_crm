@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('field_label');
             $table->enum('field_type', ['text', 'textarea', 'date', 'email',])->default('text');
             $table->json('options')->nullable(); // For select; stores array
-            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });
     }

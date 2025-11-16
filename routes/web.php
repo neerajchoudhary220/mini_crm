@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/list', 'list')->name('.list');
         Route::get('/simple-list/{id}', 'simpleList')->name('.simplelist');
         Route::post('/', 'store')->name('.store');
+        Route::delete('/{contact}', 'destroy')->name('.destroy');
         Route::get('/edit/{contact}', 'edit')->name('.edit');
         Route::post('/update/{contact}', 'update')->name('.update');
         Route::post('/merge', 'merge')->name('.merge');
