@@ -51,6 +51,9 @@ $(document).ready(function () {
   $("#add-new-contact-btn").on("click", () => {
     resetContactForm();
     contactForm[0].reset();
+    formTitle.text("Add Contact");
+    saveBtn.text("Save");
+
     contactFormModal.modal("show");
   });
 

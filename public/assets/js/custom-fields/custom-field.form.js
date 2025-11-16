@@ -4,7 +4,6 @@ function submitForm() {
     field_label: $("#field_label").val(),
     field_name: $("#field_name").val(),
     field_type: $("#field_type").val(),
-    options: $("#options").val(), // only shown for select
   };
 
   $.ajax({
@@ -41,15 +40,6 @@ function submitForm() {
 }
 
 $(document).ready(function () {
-  //when choose the select option
-  $("#field_type").on("change", function () {
-    if ($(this).val() === "select") {
-      $("#optionsArea").removeClass("d-none");
-    } else {
-      $("#optionsArea").addClass("d-none");
-    }
-  });
-
   //Click to add new custom field btn
   fieldForm.validate({
     rules: {
@@ -64,25 +54,12 @@ $(document).ready(function () {
       field_type: {
         required: true,
       },
-      options: {
-        required: function () {
-          console.log($("#field_type").val());
-          return $("#field_type").val() === "select";
-        },
-        // comma-separated validation
-        pattern: /^[^,\s][^,]*(?:,[^,\s][^,]*)*$/,
-      },
     },
 
     messages: {
       field_label: "Please enter label",
       field_name: "Enter a valid key (example: birthday)",
       field_type: "Select type",
-      // Error message for select options
-      options: {
-        required: "Provide comma-separated options",
-        pattern: "Options must be comma separated (ex: Small,Medium,Large)",
-      },
     },
     errorClass: "text-danger small border-danger",
     errorPlacement: function (error, element) {

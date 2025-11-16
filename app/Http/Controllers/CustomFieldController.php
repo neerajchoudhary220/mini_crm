@@ -95,13 +95,7 @@ class CustomFieldController extends Controller
     public function store(CustomFieldStoreRequest $customFieldStoreRequest)
     {
         try {
-            $customFields = $customFieldStoreRequest->only('field_label', 'field_name', 'field_type', 'options');
-            if ($customFieldStoreRequest->get('options') && $customFieldStoreRequest->get('field_type') === 'select') {
-                $customFields['options'] = json_encode(explode(',', $customFieldStoreRequest->options));
-            } else {
-                $customFields['options'] = null;
-            }
-
+            $customFields = $customFieldStoreRequest->only('field_label', 'field_name', 'field_type');
             DB::beginTransaction();
             ContactCustomField::create($customFields);
             DB::commit();
@@ -121,20 +115,12 @@ class CustomFieldController extends Controller
     public function update(CustomFieldUpdateRequest $customFieldUpdateRequest, ContactCustomField $contactCustomField)
     {
         try {
-            $customFields = $customFieldUpdateRequest->only('field_label', 'field_name', 'field_type', 'options');
-
-            if ($customFieldUpdateRequest->get('options') && $customFieldUpdateRequest->get('field_type') === 'select') {
-                $customFields['options'] = json_encode(explode(',', $customFieldUpdateRequest->options));
-            } else {
-                $customFields['options'] = null;
-            }
-
+            $customFields = $customFieldUpdateRequest->only('field_label', 'field_name', 'field_type');
             DB::beginTransaction();
             $contactCustomField->update([
                 'field_label' => $customFields['field_label'],
                 'field_name' => $customFields['field_name'],
                 'field_type' => $customFields['field_type'],
-                'options' => $customFields['options'],
             ]);
             DB::commit();
             return response()->json([
@@ -161,8 +147,16 @@ class CustomFieldController extends Controller
     public function listFilter($request)
     {
         $request = collect($request);
-        $search = $request->get('search');
-        $query = ContactCustomField::query();
-        return $query->when($search, fn($custom_field) => $custom_field->where('field_label', 'like', '%' . $search['value'] . '%'));
+        $search = $request->get('search')['value'] ?? null;
+        $fieldType = $request->get('field_type') ?? null;
+
+        return ContactCustomField::query()
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('field_label', 'like', "%$search%")
+                        ->orWhere('field_type', 'like', "%$search%");
+                });
+            })
+            ->when($fieldType, fn($q) => $q->where('field_type', $fieldType));
     }
 }

@@ -30,7 +30,7 @@ class CustomFieldUpdateRequest extends FormRequest
                 'min:3',
                 Rule::unique('contact_custom_fields', 'field_name')->ignore($customField->id)
             ],
-            'field_type' => ['required', 'in:text,textarea,number,date,email,select'],
+            'field_type' => ['required', 'in:text,textarea,date,email'],
             'options' => [
                 'nullable',
                 function ($attribute, $value, $fail) {

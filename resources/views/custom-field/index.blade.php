@@ -16,10 +16,24 @@
         ['label' => 'Label'],
         ['label' => 'Name'],
         ['label' => 'Type'],
-        ['label' => 'Option'],
         ['label' => 'Created At'],
         ['label' => 'Action', 'class' => 'text-center']
-    ]" />
+    ]">
+    <x-slot>
+        <div class="row mb-3">
+            <div class="col-lg-3">
+                <label for="field-type-filter" class="form-label fw-semibold">Gender</label>
+                <select id="field-type-filter" class="form-select shadow-sm" onchange="filedTypeFilter(this)">
+                    <option value="">All</option>
+                    <option value="text">Text</option>
+                    <option value="date">Date</option>
+                    <option value="textarea">Textarea</option>
+                    <option value="email">Email</option>
+                </select>
+            </div>
+        </div>
+    </x-slot>
+</x-table>
 
 @include('custom-field.form')
 @push('custom-js')
@@ -29,6 +43,7 @@
     const customFieldListUrl = "{{ route('custom.fields.list') }}"
     const customFieldFormModal = $("#custom-field-form-modal");
     const fieldForm = $("#fieldForm");
+    const btnSaveField = $("#btnSaveField")
 
     function resetCustomFieldForm() {
         fieldForm.validate().resetForm();
@@ -37,6 +52,7 @@
     }
 
     $("#add-new-custom-field-btn").on("click", () => {
+        btnSaveField.text('Save Field')
         resetCustomFieldForm()
         fieldForm[0].reset()
         fieldForm.attr('action', "{{ route('custom.fields.store') }}")

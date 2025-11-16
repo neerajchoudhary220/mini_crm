@@ -2,6 +2,4 @@
 
     <h5 class="mb-0">Welcome, {{auth()->user()->name}}</h5>
 
-
-
 </nav>

@@ -8,7 +8,7 @@
             <i class="bi bi-journal-text me-2"></i> Merge Log Details
         </h4>
 
-        <a href="{{ route('contacts') }}" class="btn btn-secondary btn-sm">
+        <a href="{{ route('contacts') }}" class="btn btn-info text-white btn-sm">
             <i class="bi bi-arrow-left"></i> Back to Contacts
         </a>
     </div>

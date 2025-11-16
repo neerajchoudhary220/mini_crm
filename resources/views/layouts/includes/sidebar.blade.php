@@ -1,6 +1,6 @@
 <div class="sidebar position-fixed top-0 left-0">
     <div class="text-center py-4 text-white fw-bold fs-4 border-bottom">
-        CRM Admin
+        Contact Mangement
     </div>
 
     <ul class="nav flex-column mt-3">

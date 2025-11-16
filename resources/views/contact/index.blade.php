@@ -35,7 +35,21 @@
         ['label' => 'Gender'],
         ['label' => 'Created At'],
         ['label' => 'Action', 'class' => 'text-center']
-    ]" />
+    ]">
+    <x-slot>
+        <div class="row mb-3">
+            <div class="col-lg-3">
+                <label for="gender-filter" class="form-label fw-semibold">Gender</label>
+                <select id="gender-filter" class="form-select shadow-sm" onchange="genderFilter(this)">
+                    <option value="">All</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+        </div>
+    </x-slot>
+</x-table>
 @include('contact.form')
 @include('contact.merge')
 @push('custom-js')
@@ -51,6 +65,9 @@
     const contactFormModal = $("#contact-form-modal");
     const contactForm = $("#contactForm");
     const profilePlaceHolderImgUrl = "{{ asset('assets/img/profile_placeholder.png') }}"
+    const formTitle = $("#formTitle")
+    const saveBtn = $("#btnSave")
+
 
     function resetContactForm() {
         contactForm.validate().resetForm();

@@ -211,14 +211,23 @@ class ContactController extends Controller
     public function listFilter($request)
     {
         $request = collect($request);
-        $search = $request->get('search');
-        $query = Contact::query();
+        $search = $request->get('search')['value'] ?? null;
 
-        return $query->forActive()
-            ->when($search, fn($contact) => $contact->where('name', 'like', '%' . $search['value'] . '%'))
-            ->orWhere('email', 'like', '%' . $search['value'] . '%')
-            ->orWhere('phone', 'like', '%' . $search['value'] . '%');
+        return Contact::query()
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%$search%")
+                        ->orWhere('email', 'like', "%$search%")
+                        ->orWhere('phone', 'like', "%$search%");
+                });
+            })
+            ->when(
+                $request->get('gender'),
+                fn($q) =>
+                $q->where('gender', $request->get('gender'))
+            );
     }
+
 
     public function edit(Contact $contact)
     {

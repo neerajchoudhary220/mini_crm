@@ -10,6 +10,9 @@ function dbTble() {
     stateSave: false,
     pageLength: 10,
     responsive: false,
+    language: {
+      searchPlaceholder: "Search name,email,phone",
+    },
     ajax: {
       url: contactListUrl,
       data: {
@@ -58,6 +61,14 @@ function dbTble() {
     },
   });
 }
+
+//Gender Filter
+function genderFilter(e) {
+  contact_dt_tbl.settings()[0].ajax.data = {
+    gender: e.value,
+  };
+  contact_dt_tbl.ajax.reload();
+}
 function reloadContactTable() {
   contact_dt_tbl.destroy();
   dbTble();
@@ -68,6 +79,9 @@ $(document).ready(function () {
 });
 
 function editContact(editContactUrl) {
+  formTitle.text("Edit Contact");
+  saveBtn.text("Update");
+
   $.ajax({
     url: editContactUrl,
     method: "GET",
@@ -129,6 +143,7 @@ function fetchSimpleList(simpleListUrl) {
   });
 }
 
+//Merge Contacts with confirmation
 function mergeContacts() {
   const primaryId = primaryContact.val();
   const secondaryId = mergeContactSelect.val();

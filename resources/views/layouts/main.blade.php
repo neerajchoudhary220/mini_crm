@@ -29,11 +29,11 @@
         }
 
         .sidebar .nav-link:hover {
-            background: #34495e;
+            background: rgb(15, 159, 188);
         }
 
         .sidebar .active {
-            background: #1abc9c;
+            background: #0dcaf0;
         }
 
         .content-wrapper {

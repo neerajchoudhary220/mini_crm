@@ -1,4 +1,4 @@
-<x-static-modal heading="Add Contact" modalId="contact-form-modal" headingIconClass="bi bi-journals me-2">
+<x-static-modal heading="Contact" modalId="contact-form-modal" headingIconClass="bi bi-journals me-2">
     <div class="row">
         <form id="contactForm" action="{{route('contacts.store')}}">
             <input type="hidden" id="contactId">
@@ -15,7 +15,7 @@
                 <img id="previewImage" src="{{asset('assets/img/profile_placeholder.png')}}"
                     class="rounded-circle shadow" width="120" height="120" style="object-fit: cover;">
                 <div class="mt-2">
-                    <label class="btn btn-outline-primary btn-sm">
+                    <label class="btn btn-outline-info btn-sm">
                         <i class="fa fa-camera"></i> Choose Image
                         <input type="file" id="profile_image" name="profile_image" hidden accept="image/*">
                     </label>
@@ -26,7 +26,7 @@
                 <!-- NAME -->
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="name">
-                        <i class="fa fa-user text-primary"></i>Name
+                        <i class="fa fa-user text-info"></i>Name
                     </label>
                     <input type="text" class="form-control form-control-lg" name="name" id="name">
                 </div>
@@ -34,7 +34,7 @@
                 <!-- EMAIL -->
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="email">
-                        <i class="fa fa-envelope text-danger"></i> Email
+                        <i class="fa fa-envelope text-info"></i> Email
                     </label>
                     <input type="email" class="form-control form-control-lg" id="email" name="email">
                 </div>
@@ -44,7 +44,7 @@
                 <!-- PHONE -->
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="phone">
-                        <i class="fa fa-phone text-success"></i> Phone
+                        <i class="fa fa-phone text-info"></i> Phone
                     </label>
                     <input type="text" name="phone" class="form-control form-control-lg" id="phone">
                 </div>
@@ -93,8 +93,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fa fa-times"></i> Cancel
         </button>
-
-        <button class="btn btn-primary" id="btnSave">Save Contact
+        <button class="btn btn-info text-white" id="btnSave"><i class="fa fa-save"></i> Contact
         </button>
     </div>
     </form>

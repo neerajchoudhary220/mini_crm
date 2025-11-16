@@ -24,7 +24,7 @@ class CustomFieldStoreRequest extends FormRequest
         return [
             'field_label' => ['required', 'min:3'],
             'field_name' => ['required', 'min:3', 'unique:contact_custom_fields,field_name'],
-            'field_type' => ['required', 'in:text,textarea,number,date,email,select'],
+            'field_type' => ['required', 'in:text,textarea,date,email'],
             'options' => [
                 'nullable',
                 function ($attribute, $value, $fail) {

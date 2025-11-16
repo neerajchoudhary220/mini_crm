@@ -16,7 +16,6 @@ function customFieldDT() {
       { name: "field_label", data: "field_label" },
       { name: "field_name", data: "field_name" },
       { name: "field_type", data: "field_type" },
-      { name: "options", data: "options" },
       {
         name: "created_at",
         data: "created_at_display",
@@ -29,7 +28,7 @@ function customFieldDT() {
       },
       { name: "action", data: "action", orderable: false },
     ],
-    order: [5, "desc"],
+    order: [4, "desc"],
     createdRow: function (row, data, dataIndex) {
       // Add data-label for each td based on its column title
       $("td", row).each(function (colIndex) {
@@ -50,6 +49,7 @@ function customFieldDT() {
       });
       //click to edit button
       $(".edt-btn").on("click", function () {
+        btnSaveField.text("Update Field");
         const fieldData = $(this).data("values");
         Object.entries(fieldData).forEach(([key, value]) => {
           putCustomFieldFormValue(key, value);
@@ -61,6 +61,14 @@ function customFieldDT() {
       });
     },
   });
+}
+
+//Filter type filter
+function filedTypeFilter(e) {
+  custom_field_dt.settings()[0].ajax.data = {
+    field_type: e.value,
+  };
+  custom_field_dt.ajax.reload();
 }
 function reloadContactFieldTable() {
   custom_field_dt.destroy();
