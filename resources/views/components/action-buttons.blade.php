@@ -3,6 +3,8 @@
 'deleteUrl' => null,
 'data' => null,
 'updateUrl'=>null,
+'mergeSimpleListUrl'=>null,
+'contactId'=>null,
 ])
 
 <div class="d-flex justify-content-center gap-2">
@@ -23,6 +25,14 @@
         class="btn btn-sm btn-danger text-white dlt-btn"
         data-url="{{ $deleteUrl }}">
         <i class="fa fa-trash"></i> Delete
+    </button>
+    @endif
+
+    {{-- Merge Button --}}
+    @if($mergeSimpleListUrl)
+    <button class="btn btn-sm btn-info text-white merge-btn"
+        data-simple-list-url="{{$mergeSimpleListUrl}}" data-contact-id="{{$contactId}}">
+        <i class="bi bi-sign-merge-right"></i> Merge
     </button>
     @endif
 

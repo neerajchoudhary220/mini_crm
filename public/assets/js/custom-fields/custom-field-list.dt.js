@@ -69,11 +69,7 @@ function reloadContactFieldTable() {
 }
 
 function putCustomFieldFormValue(fieldName, fieldValue) {
-  fieldForm.validate().resetForm();
-  fieldForm.find('label[class=".text-danger small"]').remove();
-  fieldForm
-    .find(".border-danger")
-    .removeClass("border-danger text-danger small");
+  resetCustomFieldForm();
   $(`#fieldForm [name="${fieldName}"]`).val(fieldValue);
 }
 

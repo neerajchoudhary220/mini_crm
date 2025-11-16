@@ -7,7 +7,11 @@ use Illuminate\Support\Facades\Storage;
 
 class Contact extends Model
 {
-    protected $fillable = ['name', 'email', 'phone', 'gender', 'profile_image_id', 'merged_into'];
+    protected $fillable = ['name', 'email', 'phone', 'gender', 'profile_image_id', 'merged_into', 'is_active'];
+
+    protected $casts = [
+        'is_active' => 'boolean'
+    ];
 
     public function media()
     {

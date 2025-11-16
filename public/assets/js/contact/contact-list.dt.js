@@ -1,4 +1,6 @@
 let contact_dt_tbl = "";
+const mergeModal = $("#merge-modal");
+const primaryContact = $("#primaryContactId");
 function dbTble() {
   contact_dt_tbl = $("#contact-dt-tbl").DataTable({
     serverSide: true,
@@ -38,9 +40,17 @@ function dbTble() {
       });
     },
     drawCallback: function () {
+      //Edit Contact
       $(".edt-btn").on("click", function () {
+        resetContactForm();
         editContact($(this).data("edit-url"));
         contactForm.attr("action", $(this).data("update-url"));
+      });
+      //Merge Contact
+      $(".merge-btn").on("click", function () {
+        const simpleListUrl = $(this).data("simple-list-url");
+        primaryContact.val($(this).data("contact-id"));
+        fetchSimpleList(simpleListUrl);
       });
     },
   });
@@ -73,6 +83,49 @@ function editContact(editContactUrl) {
     error: function (error) {},
   });
 }
+
+function fetchSimpleList(simpleListUrl) {
+  // $("#primaryContactId").val(id);
+  $("#mergeContactSelect").empty();
+
+  $.ajax({
+    url: simpleListUrl,
+    method: "GET",
+    success: function (res) {
+      res.forEach((c) => {
+        $("#mergeContactSelect").append(
+          `<option value="${c.id}">${c.name} - ${c.email}</option>`
+        );
+      });
+    },
+    error: function (error) {
+      console.error(error);
+    },
+  });
+  mergeModal.modal("show");
+}
+
+function mergeContacts() {
+  $.ajax({
+    url: mergeUrl,
+    method: "POST",
+    data: {
+      primary_id: primaryContact.val(),
+      secondary_id: $("#mergeContactSelect").val(),
+      master: $("input[name='master']:checked").val(),
+      _token: $('meta[name="csrf-token"]').attr("content"),
+    },
+    success: function (res) {
+      showToast(res.message, "success");
+      mergeModal.modal("hide");
+      reloadContactTable();
+    },
+    error: function () {
+      showToast("Something went wrong!", "danger");
+    },
+  });
+}
+
 function reloadContactTable() {
   contact_dt_tbl.destroy();
   dbTble();

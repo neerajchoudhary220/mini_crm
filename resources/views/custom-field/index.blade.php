@@ -31,14 +31,14 @@
     const fieldForm = $("#fieldForm");
 
     function resetCustomFieldForm() {
-        fieldForm[0].reset()
         fieldForm.validate().resetForm();
-        fieldForm.find('label[class=".text-danger small"]').remove()
+        fieldForm.find('label[class="text-danger small"]').remove()
         fieldForm.find(".border-danger").removeClass('border-danger')
     }
 
     $("#add-new-custom-field-btn").on("click", () => {
         resetCustomFieldForm()
+        fieldForm[0].reset()
         fieldForm.attr('action', "{{ route('custom.fields.store') }}")
         customFieldFormModal.modal("show");
     });

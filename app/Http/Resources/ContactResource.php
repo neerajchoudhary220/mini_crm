@@ -25,7 +25,7 @@ class ContactResource extends JsonResource
             'gender' => $this->gender,
             'profile_image' => $profileImage
                 ? Storage::url($profileImage->file_path)
-                : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnkcqkUHsDulyGaMQk4mV7s9_d8-FW0x8ZOQ&s",
+                : asset('assets/img/profile_placeholder.png'),
             'document' => $document
                 ? Storage::url($document->file_path)
                 : null,

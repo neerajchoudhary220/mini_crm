@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Storage;
 
 class ContactController extends Controller
 {
@@ -141,10 +142,13 @@ class ContactController extends Controller
             foreach ($data as $d) {
                 $d->idx = $idx;
                 $d->action = Blade::render(
-                    '<x-action-buttons  :edit-url="$editUrl" :update-url="$updateUrl"/>',
+                    '<x-action-buttons  :edit-url="$editUrl" :update-url="$updateUrl" 
+                     :merge-simple-list-url="$mergeSimpleListUrl" :contact-id="$contactId"/>',
                     [
                         'editUrl' => route('contacts.edit', $d),
-                        'updateUrl' => route('contacts.update', $d)
+                        'updateUrl' => route('contacts.update', $d),
+                        'mergeSimpleListUrl' => route('contacts.simplelist'),
+                        'contactId' => $d->id,
                     ]
                 );
 
@@ -160,6 +164,13 @@ class ContactController extends Controller
         }
     }
 
+    public function simpleList()
+    {
+        return Contact::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+    }
+
     public function listFilter($request)
     {
         $request = collect($request);
@@ -173,5 +184,64 @@ class ContactController extends Controller
     public function edit(Contact $contact)
     {
         return new ContactResource($contact->load(['media', 'customFieldValues.customField']));
+    }
+
+    public function merge(Request $request)
+    {
+        try {
+            $primaryId = $request->primary_id;
+            $secondaryId = $request->secondary_id;
+            $masterType = $request->master; // primary or secondary
+
+            $primary = Contact::with('customFieldValues')->findOrFail($primaryId);
+            $secondary = Contact::with('customFieldValues')->findOrFail($secondaryId);
+            // Determine master
+            $master = $masterType == 'primary' ? $primary : $secondary;
+            $slave  = $masterType == 'primary' ? $secondary : $primary;
+            DB::beginTransaction();
+            foreach ($slave->customFieldValues as $field) {
+                $existing = $master->customFieldValues
+                    ->where('custom_field_id', $field->custom_field_id)
+                    ->first();
+
+                if (!$existing) {
+                    // Copy custom field to master
+                    ContactCustomFieldValue::create([
+                        'contact_id' => $master->id,
+                        'custom_field_id' => $field->custom_field_id,
+                        'value' => $field->value
+                    ]);
+                }
+            }
+            $masterProfile = $master->media()->where('tag', 'profile_image')->first();
+            $slaveProfile = $slave->media()->where('tag', 'profile_image')->first();
+
+            if (!$masterProfile && $slaveProfile) {
+                $new_file = Storage::copy($slaveProfile->file_path, $slaveProfile->file_path . '_copy');
+                logger()->info($new_file);
+                $master->media()->create([
+                    'file_name' => $slaveProfile->file_name,
+                    'file_path' => $slaveProfile->file_path,
+                    'mime_type' => $slaveProfile->mime_type,
+                    'tag' => 'profile_image'
+                ]);
+            }
+
+            $slave->merged_into = $master->id;
+            $slave->save();
+
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Contacts merged successfully'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger()->error($e->getMessage());
+            return response()->json([
+                'status' => 'failed',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
