@@ -2,6 +2,7 @@
 'editUrl' => null,
 'deleteUrl' => null,
 'data' => null,
+'updateUrl'=>null,
 ])
 
 <div class="d-flex justify-content-center gap-2">
@@ -11,7 +12,7 @@
     <button
         class="btn btn-sm btn-warning text-white edt-btn"
         data-values='@json($data)'
-        data-edit-url="{{ $editUrl }}">
+        data-edit-url="{{ $editUrl }}" data-update-url="{{$updateUrl}}">
         <i class="fa fa-pencil"></i> Edit
     </button>
     @endif

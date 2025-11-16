@@ -17,6 +17,16 @@ function dbTble() {
       { name: "email", data: "email" },
       { name: "phone", data: "phone" },
       { name: "gender", data: "gender" },
+      {
+        name: "created_at",
+        data: "created_at_display",
+        render: function (data, type, row) {
+          if (type === "sort") {
+            return row.created_at;
+          }
+          return data;
+        },
+      },
       { name: "action", data: "action", orderable: false },
     ],
     order: [1, "desc"],
@@ -27,59 +37,42 @@ function dbTble() {
         $(this).attr("data-label", columnTitle);
       });
     },
-    drawCallback: function (settings, json) {
-      //   $(".expense-edit").on("click", function () {
-      //     const expense_id = $(this).data("id");
-      //     Livewire.dispatch("edit-expense-event", { expense: expense_id });
-      //   });
-      //   $(".expense-delete").on("click", function () {
-      //     const delete_url = $(this).data("delete-url");
-      //     deleteExpense(delete_url);
-      //   });
+    drawCallback: function () {
+      $(".edt-btn").on("click", function () {
+        editContact($(this).data("edit-url"));
+        contactForm.attr("action", $(this).data("update-url"));
+      });
     },
   });
 }
 
-// function applyFilter(selected_value = null) {
-//   const filter_data = {
-//     category: selected_value ? selected_value : category.val(),
-//     quick_day: quick_day.val(),
-//     payment_method: payment_method.val(),
-//   };
-//   if (quick_day.val() === "custom_date") {
-//     filter_data["start_date"] = start_date.val();
-//     filter_data["end_date"] = end_date.val();
-//   }
-
-//   contact_dt_tbl.settings()[0].ajax.data = filter_data;
-//   contact_dt_tbl.ajax.reload();
-// }
-
-//Delete Expense
-const deleteContact = (delete_url) => {
-  Swal.fire({
-    title: "Are you sure?",
-    text: "You want to delete this.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#dc3545", // green
-    cancelButtonColor: "#0dcaf0",
-    confirmButtonText: "Yes, delete it!",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      $.ajax({
-        url: "#",
-        method: "delete",
-        success: function (data) {
-          Swal.fire("Deleted!", data.msg, "success");
-          contact_dt_tbl.destroy();
-          dbTble();
-        },
+function editContact(editContactUrl) {
+  $.ajax({
+    url: editContactUrl,
+    method: "GET",
+    success: function (res) {
+      const data = res.data;
+      $("#name").val(data.name);
+      $("#phone").val(data.phone);
+      $("#email").val(data.email);
+      $(`input[name='gender'][value=${data.gender}]`).prop("checked", true);
+      $("#previewImage").attr("src", data.profile_image);
+      $("#dynamicFieldsArea").html("");
+      customFieldSelect.val(null).trigger("change");
+      let selected = [];
+      data.custom_fields.forEach((field) => {
+        selected.push(field.id);
+        let option = new Option(field.field_label, field.id, true, true);
+        customFieldSelect.append(option);
+        let html = generateFieldHTML(field, field.value);
+        $("#dynamicFieldsArea").append(html);
       });
-    }
+      customFieldSelect.trigger("change");
+      contactFormModal.modal("show");
+    },
+    error: function (error) {},
   });
-};
-
+}
 function reloadContactTable() {
   contact_dt_tbl.destroy();
   dbTble();

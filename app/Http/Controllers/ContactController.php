@@ -2,14 +2,121 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ContactStoreRequest;
+use App\Http\Requests\ContactUpdateRequest;
+use App\Http\Resources\ContactResource;
 use App\Models\Contact;
+use App\Models\ContactCustomFieldValue;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Blade;
 
 class ContactController extends Controller
 {
     public function index()
     {
         return view('contact.index');
+    }
+
+    public function store(ContactStoreRequest $contactStoreRequest)
+    {
+        try {
+            DB::beginTransaction();
+            $contact_basic_data = $contactStoreRequest->only('name', 'email', 'phone', 'gender');
+            $contact = Contact::create($contact_basic_data);
+
+            //Store Profile Image
+            if ($contactStoreRequest->hasFile('profile_image')) {
+                $contact->addMedia($contactStoreRequest->file('profile_image'), 'profile_image');
+            }
+            //store document file
+            if ($contactStoreRequest->hasFile('document')) {
+                $contact->addMedia($contactStoreRequest->file('document'), 'document');
+            }
+
+            //Store custom field
+            if ($contactStoreRequest->custom) {
+                foreach ($contactStoreRequest->custom as $fieldId => $value) {
+                    ContactCustomFieldValue::create([
+                        'contact_id'      => $contact->id,
+                        'custom_field_id' => $fieldId,
+                        'value'           => $value,
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Successfully added new contact'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger()->error($e->getMessage());
+            return response()->json([
+                'status' => 'failed',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function update(ContactUpdateRequest $contactUpdateRequest, Contact $contact)
+    {
+        try {
+            DB::beginTransaction();
+            $contact_basic_data = $contactUpdateRequest->only('name', 'email', 'phone', 'gender');
+            //Update basic details
+            $contact->update([
+                'name' => $contact_basic_data['name'],
+                'email' => $contact_basic_data['email'],
+                'phone' => $contact_basic_data['phone'],
+                'gender' => $contact_basic_data['gender'],
+            ]);
+
+            //update files
+            if ($contactUpdateRequest->hasFile('profile_image')) {
+                $oldProfileImage = $contact->media()->where('tag', 'profile_image')->first();
+                if ($oldProfileImage) {
+                    $contact->deleteMedia($oldProfileImage);
+                }
+                $contact->addMedia($contactUpdateRequest->file('profile_image'), 'profile_image');
+            }
+            if ($contactUpdateRequest->hasFile('document')) {
+                $oldDocument = $contact->media()->where('tag', 'document')->first();
+                if ($oldDocument) {
+                    $contact->deleteMedia($oldDocument);
+                }
+                $contact->addMedia($contactUpdateRequest->file('document'), 'document');
+            }
+
+            //Update custom fields
+            if ($contactUpdateRequest->custom) {
+                $contactUpdateRequest->custom->delete(); //delete old custom fields
+                foreach ($contactUpdateRequest->custom as $fieldId => $value) {
+                    ContactCustomFieldValue::create(
+                        [
+                            'contact_id' => $contact->id,
+                            'custom_field_id' => $fieldId,
+                            'value' => $value,
+                        ],
+                    );
+                }
+            }
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Contact updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            logger()->error($e->getMessage());
+            return response()->json([
+                'status' => 'failed',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function list(Request $request)
@@ -33,7 +140,15 @@ class ContactController extends Controller
             $idx = 1;
             foreach ($data as $d) {
                 $d->idx = $idx;
-                $d->action = "--";
+                $d->action = Blade::render(
+                    '<x-action-buttons  :edit-url="$editUrl" :update-url="$updateUrl"/>',
+                    [
+                        'editUrl' => route('contacts.edit', $d),
+                        'updateUrl' => route('contacts.update', $d)
+                    ]
+                );
+
+                $d->created_at_display = Carbon::parse($d->created_at)->format('d-M-Y');
                 $idx++;
             }
             return [
@@ -50,6 +165,13 @@ class ContactController extends Controller
         $request = collect($request);
         $search = $request->get('search');
         $query = Contact::query();
-        return $query->when($search, fn($contact) => $contact->where('name', 'like', '%' . $search['value'] . '%'));
+        return $query->when($search, fn($contact) => $contact->where('name', 'like', '%' . $search['value'] . '%'))
+            ->orWhere('email', 'like', '%' . $search['value'] . '%')
+            ->orWhere('phone', 'like', '%' . $search['value'] . '%');
+    }
+
+    public function edit(Contact $contact)
+    {
+        return new ContactResource($contact->load(['media', 'customFieldValues.customField']));
     }
 }

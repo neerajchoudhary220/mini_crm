@@ -37,13 +37,70 @@
 @push('custom-js')
 @include('layouts.includes.datatable-js')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 <script>
     const contactListUrl = "{{ route('contacts.list') }}"
     const fieldListUrl = "{{ route('custom.fields.items') }}"
     const customFieldsUrl = "{{route('custom.fields.show')}}"
+    const customFieldSelect = $("#customFieldSelect");
+    const contactFormModal = $("#contact-form-modal");
+    const contactForm = $("#contactForm");
+
+    function generateFieldHTML(field, value = "") {
+        let html = "";
+
+        switch (field.field_type) {
+            case "text":
+            case "email":
+            case "number":
+            case "date":
+                html = `
+            <div class="mb-3 dynamic-field" id="field_${field.id}">
+                <label class="form-label">${field.field_label}</label>
+                <input type="${field.field_type}" 
+                       name="custom[${field.id}]" 
+                       data-id="${field.id}"
+                       value="${value}"
+                       class="form-control custom-field">
+            </div>`;
+                break;
+
+            case "textarea":
+                html = `
+            <div class="mb-3 dynamic-field" id="field_${field.id}">
+                <label class="form-label">${field.field_label}</label>
+                <textarea name="custom[${field.id}]" 
+                data-id="${field.id}"
+                          class="form-control custom-field" rows="3">${value}</textarea>
+            </div>`;
+                break;
+
+            case "select":
+                let options = JSON.parse(field.options);
+                let optionHTML = options
+                    .map(
+                        (o) =>
+                        `<option value="${o}" ${
+                value === o ? "selected" : ""
+              }>${o}</option>`
+                    )
+                    .join("");
+
+                html = `
+            <div class="mb-3 dynamic-field" id="field_${field.id}">
+                <label class="form-label">${field.field_label}</label>
+                <select name="custom[${field.id}]" class="form-select custom-field">
+                    ${optionHTML}
+                </select>
+            </div>`;
+                break;
+        }
+
+        return html;
+    }
 </script>
-<script src="{{asset('assets/js/contact/conact-form.js')}}"></script>
 <script src="{{asset('assets/js/contact/contact-list.dt.js')}}"></script>
+<script src="{{asset('assets/js/contact/conact-form.js')}}"></script>
+
 @endpush
 @endsection

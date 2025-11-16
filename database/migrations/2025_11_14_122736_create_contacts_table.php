@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->nullable()->index();
             $table->string('phone')->nullable()->index();
-            $table->enum('gender', ['maile', 'female', 'other'])->nullable();
+            $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->unsignedBigInteger('profile_image_id')->nullable();
             $table->unsignedBigInteger('merged_into')->nullable()->index();
             $table->timestamps();

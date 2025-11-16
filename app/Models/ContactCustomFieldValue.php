@@ -8,7 +8,7 @@ class ContactCustomFieldValue extends Model
 {
     protected $fillable = ['contact_id', 'custom_field_id', 'value'];
 
-    public function field()
+    public function customField()
     {
         return $this->belongsTo(ContactCustomField::class, 'custom_field_id');
     }

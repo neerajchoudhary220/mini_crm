@@ -35,6 +35,7 @@ class CustomFieldStoreRequest extends FormRequest
                     }
                 }
             ],
+            'custom' => ['nullable', 'array']
         ];
     }
 }

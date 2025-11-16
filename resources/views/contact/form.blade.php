@@ -10,7 +10,7 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <form id="contactForm" enctype="multipart/form-data">
+                    <form id="contactForm" action="{{route('contacts.store')}}">
                         <input type="hidden" id="contactId">
 
                         <!-- HEADER -->
@@ -22,7 +22,7 @@
 
                         <!-- PROFILE IMAGE -->
                         <div class="text-center mb-4">
-                            <img id="previewImage" src="https://via.placeholder.com/120"
+                            <img id="previewImage" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnkcqkUHsDulyGaMQk4mV7s9_d8-FW0x8ZOQ&s"
                                 class="rounded-circle shadow" width="120" height="120" style="object-fit: cover;">
                             <div class="mt-2">
                                 <label class="btn btn-outline-primary btn-sm">
@@ -32,42 +32,41 @@
                             </div>
                         </div>
 
-                        <div class="row g-3">
-
+                        <div class="row g-3 mb-3">
                             <!-- NAME -->
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">
+                                <label class="form-label fw-semibold" for="name">
                                     <i class="fa fa-user text-primary"></i>Name
                                 </label>
-                                <input type="text" class="form-control form-control-lg" id="name" required>
-                                <small class="text-muted">Enter the contact's full name</small>
+                                <input type="text" class="form-control form-control-lg" name="name" id="name">
                             </div>
 
                             <!-- EMAIL -->
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">
+                                <label class="form-label fw-semibold" for="email">
                                     <i class="fa fa-envelope text-danger"></i> Email
                                 </label>
-                                <input type="email" class="form-control form-control-lg" id="email">
-                                <small class="text-muted">We'll use this email for communication</small>
+                                <input type="email" class="form-control form-control-lg" id="email" name="email">
                             </div>
+                        </div>
 
+                        <div class="row g-3 mb-3">
                             <!-- PHONE -->
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">
+                                <label class="form-label fw-semibold" for="phone">
                                     <i class="fa fa-phone text-success"></i> Phone
                                 </label>
-                                <input type="text" class="form-control form-control-lg" id="phone">
+                                <input type="text" name="phone" class="form-control form-control-lg" id="phone">
                             </div>
 
                             <!-- GENDER -->
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold d-block">
+                                <label class="form-label fw-semibold d-block" for="gender">
                                     <i class="fa fa-venus-mars text-info"></i> Gender
                                 </label>
 
                                 <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="gender" value="male" id="genderMale">
+                                    <input type="radio" class="btn-check" name="gender" value="male" id="genderMale" checked>
                                     <label class="btn btn-outline-primary" for="genderMale">Male</label>
 
                                     <input type="radio" class="btn-check" name="gender" value="female" id="genderFemale">
@@ -77,50 +76,51 @@
                                     <label class="btn btn-outline-primary" for="genderOther">Other</label>
                                 </div>
                             </div>
-
-                            <!-- DOCUMENT UPLOAD -->
-                            <div class="col-md-12">
-                                <label class="form-label fw-semibold">
-                                    <i class="fa fa-file text-warning"></i> Additional Document
-                                </label>
-
-                                <input type="file" class="form-control" id="document" accept=".pdf,.jpg,.png,.jpeg">
-                                <small class="text-muted">You may upload a PDF or image</small>
-                            </div>
-
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Select Custom Field</label>
-
-                            <select id="customFieldSelect" class="form-select multiple" style="width: 100%"></select>
-
-                            <small class="text-muted">Search custom fields using Select2</small>
                         </div>
 
-                        <div id="dynamicFieldsArea"></div>
 
-                        <!-- ACTION BUTTONS -->
-                        <div class="mt-4 text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fa fa-times"></i> Cancel
-                            </button>
+                        <!-- DOCUMENT UPLOAD -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold" for="document">
+                                <i class="fa fa-file text-warning"></i> Additional Document
+                            </label>
 
-                            <button type="submit" class="btn btn-primary" id="btnSave">
-                                <i class="fa fa-save"></i> Save Contact
-                            </button>
+                            <input type="file" class="form-control" id="document" accept=".pdf,.jpg,.png,.jpeg">
+                            <small class="text-muted">You may upload a PDF or image</small>
                         </div>
-                    </form>
-
-                    <style>
-                        /* Smooth form look */
-                        #contactForm .form-control-lg {
-                            border-radius: 10px;
-                        }
-                    </style>
 
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Select Custom Field</label>
 
+                    <select id="customFieldSelect" class="form-select multiple" style="width: 100%"></select>
+
+                    <!-- <small class="text-muted">Search custom fields using Select2</small> -->
+                </div>
+
+                <div id="dynamicFieldsArea"></div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="mt-4 text-end">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times"></i> Cancel
+                    </button>
+
+                    <button class="btn btn-primary" id="btnSave">Save Contact
+                    </button>
+                </div>
+                </form>
+
+                <style>
+                    /* Smooth form look */
+                    #contactForm .form-control-lg {
+                        border-radius: 10px;
+                    }
+                </style>
+
+            </div>
         </div>
+
     </div>
+</div>
 </div>

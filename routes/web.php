@@ -25,6 +25,9 @@ Route::middleware('auth')->group(function () {
     Route::controller(ContactController::class)->prefix('contacts')->name('contacts')->group(function () {
         Route::get('/', 'index');
         Route::get('/list', 'list')->name('.list');
+        Route::post('/', 'store')->name('.store');
+        Route::get('/edit/{contact}', 'edit')->name('.edit');
+        Route::post('/update/{contact}', 'update')->name('.update');
     });
 
     //Custom Field
