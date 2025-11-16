@@ -5,6 +5,7 @@
 'updateUrl'=>null,
 'mergeSimpleListUrl'=>null,
 'contactId'=>null,
+'mergeLogUrl'=>null,
 ])
 
 <div class="d-flex justify-content-center gap-2">
@@ -34,6 +35,13 @@
         data-simple-list-url="{{$mergeSimpleListUrl}}" data-contact-id="{{$contactId}}">
         <i class="bi bi-sign-merge-right"></i> Merge
     </button>
+    @endif
+
+    {{-- Merge Log View  Button--}}
+    @if($mergeLogUrl)
+    <a class="btn btn-sm btn-secondary text-white" href="{{ $mergeLogUrl }}">
+        <i class="bi bi-sign-merge-right"></i> Merge Log
+    </a>
     @endif
 
 

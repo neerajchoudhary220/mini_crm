@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/{contact}', 'edit')->name('.edit');
         Route::post('/update/{contact}', 'update')->name('.update');
         Route::post('/merge', 'merge')->name('.merge');
+        Route::get('/merge-log/{contactMergeLog}', 'mergeLogView')->name('.merge.log');
     });
 
     //Custom Field

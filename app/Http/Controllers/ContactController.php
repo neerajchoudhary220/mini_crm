@@ -146,12 +146,13 @@ class ContactController extends Controller
                 $d->name = $d->is_active ? $d->name : "<i class='bi bi-check-circle-fill text-success' title='Merged'></i> <span>$d->name</span>";
                 $d->action = Blade::render(
                     '<x-action-buttons  :edit-url="$editUrl" :update-url="$updateUrl" 
-                     :merge-simple-list-url="$mergeSimpleListUrl" :contact-id="$contactId"/>',
+                     :merge-simple-list-url="$mergeSimpleListUrl" :contact-id="$contactId" :merge-log-url="$mergeLogUrl"/>',
                     [
                         'editUrl' => route('contacts.edit', $d),
                         'updateUrl' => route('contacts.update', $d),
                         'mergeSimpleListUrl' => $d->is_active ? route('contacts.simplelist', $d->id) : null,
                         'contactId' => $d->is_active ?  $d->id : null,
+                        'mergeLogUrl' => !$d->is_active ? route('contacts.merge.log', $d) : null,
 
                     ]
                 );
@@ -398,62 +399,11 @@ class ContactController extends Controller
             ], 500);
         }
     }
-    // public function merge(Request $request)
-    // {
-    //     try {
-    //         $primaryId = $request->primary_id;
-    //         $secondaryId = $request->secondary_id;
-    //         $masterType = $request->master; // primary or secondary
 
-    //         $primary = Contact::with('customFieldValues')->findOrFail($primaryId);
-    //         $secondary = Contact::with('customFieldValues')->findOrFail($secondaryId);
-    //         // Determine master
-    //         $master = $masterType == 'primary' ? $primary : $secondary;
-    //         $slave  = $masterType == 'primary' ? $secondary : $primary;
-    //         DB::beginTransaction();
-    //         foreach ($slave->customFieldValues as $field) {
-    //             $existing = $master->customFieldValues
-    //                 ->where('custom_field_id', $field->custom_field_id)
-    //                 ->first();
-
-    //             if (!$existing) {
-    //                 // Copy custom field to master
-    //                 ContactCustomFieldValue::create([
-    //                     'contact_id' => $master->id,
-    //                     'custom_field_id' => $field->custom_field_id,
-    //                     'value' => $field->value
-    //                 ]);
-    //             }
-    //         }
-    //         $masterProfile = $master->media()->where('tag', 'profile_image')->first();
-    //         $slaveProfile = $slave->media()->where('tag', 'profile_image')->first();
-
-    //         if (!$masterProfile && $slaveProfile) {
-    //             $new_file = Storage::copy($slaveProfile->file_path, $slaveProfile->file_path . '_copy');
-    //             logger()->info($new_file);
-    //             $master->media()->create([
-    //                 'file_name' => $slaveProfile->file_name,
-    //                 'file_path' => $slaveProfile->file_path,
-    //                 'mime_type' => $slaveProfile->mime_type,
-    //                 'tag' => 'profile_image'
-    //             ]);
-    //         }
-
-    //         $slave->merged_into = $master->id;
-    //         $slave->save();
-
-    //         DB::commit();
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'message' => 'Contacts merged successfully'
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         logger()->error($e->getMessage());
-    //         return response()->json([
-    //             'status' => 'failed',
-    //             'message' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
+    public function mergeLogView(ContactMergeLog $contactMergeLog)
+    {
+        $log = $contactMergeLog->load(['masterContact', 'mergedContact']);
+        $data = $log->merged_data;
+        return view('contact.merge-log', compact('log', 'data'));
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Contact extends Model
 {
@@ -12,6 +13,13 @@ class Contact extends Model
     protected $casts = [
         'is_active' => 'boolean'
     ];
+
+
+    protected function gender(): Attribute
+    {
+        return Attribute::make(get: fn(string $gender) => ucfirst($gender));
+    }
+
 
     public function media()
     {
