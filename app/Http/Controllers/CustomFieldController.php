@@ -66,11 +66,13 @@ class CustomFieldController extends Controller
             $idx = 1;
             foreach ($data as $d) {
                 $d->idx = $idx;
+                $d->field_type = ucfirst($d->field_type);
                 $d->action = Blade::render(
-                    '<x-action-buttons :edit-url="$editUrl" :delete-url="$deleteUrl" :data="$data" />',
+                    '<x-action-buttons :edit-url="$editUrl" :update-url="$updateUrl" :delete-url="$deleteUrl" :data="$data" />',
                     [
-                        'editUrl' => route('custom.fields.update', $d),
+                        'updateUrl' => route('custom.fields.update', $d),
                         'deleteUrl' => route('custom.fields.destroy', $d),
+                        'editUrl' => route('custom.fields.edit', $d),
                         'data' => $d
                     ]
                 );
@@ -111,6 +113,15 @@ class CustomFieldController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function edit(ContactCustomField $contactCustomField)
+    {
+        return response()->json([
+            'field_label' => $contactCustomField->field_label,
+            'field_name' => $contactCustomField->field_name,
+            'field_type' => $contactCustomField->field_type,
+        ]);
     }
     public function update(CustomFieldUpdateRequest $customFieldUpdateRequest, ContactCustomField $contactCustomField)
     {

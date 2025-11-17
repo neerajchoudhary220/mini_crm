@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'index');
         Route::get('/list', 'list')->name('.list');
         Route::post('/store', 'store')->name('.store');
+        Route::get('/edit/{contactCustomField}', 'edit')->name('.edit');
         Route::delete('/{contactCustomField}', 'destroy')->name('.destroy');
         Route::post('/update/{contactCustomField}', 'update')->name('.update');
         Route::get('/items', 'fields')->name('.items');

@@ -59,7 +59,7 @@
                 </div>
 
                 <!-- Login Button -->
-                <button class="btn btn-primary w-100 btn-lg" type="submit">Login</button>
+                <button class="btn btn-info text-white w-100 btn-lg" type="submit">Login</button>
             </form>
 
         </div>

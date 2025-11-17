@@ -50,15 +50,27 @@ function customFieldDT() {
       //click to edit button
       $(".edt-btn").on("click", function () {
         btnSaveField.text("Update Field");
-        const fieldData = $(this).data("values");
-        Object.entries(fieldData).forEach(([key, value]) => {
-          putCustomFieldFormValue(key, value);
-        });
-        const editUrl = $(this).data("edit-url");
-        fieldForm.attr("action", editUrl);
+        fieldForm.attr("action", $(this).data("update-url"));
         customFieldFormModal.modal("show");
         customFieldFormModal.find(".modal-heading").text("Edit Field");
+        customFieldEdit($(this).data("edit-url"));
       });
+    },
+  });
+}
+
+function customFieldEdit(updateUrl) {
+  $.ajax({
+    url: updateUrl,
+    method: "GET",
+    success: function (res) {
+      const fields = ["field_label", "field_name", "field_type"];
+      fields.forEach((id) => {
+        $("#" + id).val(res[id]);
+      });
+    },
+    error: function (error) {
+      console.error(error);
     },
   });
 }

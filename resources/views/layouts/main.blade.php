@@ -42,6 +42,8 @@
 
         .topnav {
             height: 60px;
+            position: relative;
+            top: -70px;
         }
     </style>
 
@@ -54,13 +56,14 @@
         <div id="toastBox"></div>
     </div>
     <!-- Sidebar -->
+    @include('layouts.includes.topnav')
+
     @include('layouts.includes.sidebar')
 
     <!-- Main Content Wrapper -->
     <div class="content-wrapper">
 
         <!-- Top Navbar -->
-        @include('layouts.includes.topnav')
 
         <!-- Main Content -->
         <div class="container-fluid py-4">

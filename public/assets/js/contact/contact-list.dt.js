@@ -15,9 +15,6 @@ function dbTble() {
     },
     ajax: {
       url: contactListUrl,
-      data: {
-        // 'category':$("#categories :selected").val()
-      },
     },
     columns: [
       { name: "idx", data: "idx" },
@@ -65,20 +62,14 @@ function dbTble() {
       });
       //Merge Contact
       $(".merge-btn").on("click", function () {
+        mergeContactSelect.html("");
+        mergeContactSelect.val(null).trigger("change");
         primaryContact.val($(this).data("contact-id"));
         simpleListUrl = $(this).data("simple-list-url");
         fetchSimpleList(simpleListUrl);
       });
     },
   });
-}
-
-//Gender Filter
-function genderFilter(e) {
-  contact_dt_tbl.settings()[0].ajax.data = {
-    gender: e.value,
-  };
-  contact_dt_tbl.ajax.reload();
 }
 function reloadContactTable() {
   contact_dt_tbl.destroy();
@@ -88,6 +79,14 @@ function reloadContactTable() {
 $(document).ready(function () {
   dbTble();
 });
+
+//Gender Filter
+function genderFilter(e) {
+  contact_dt_tbl.settings()[0].ajax.data = {
+    gender: e.value,
+  };
+  contact_dt_tbl.ajax.reload();
+}
 
 function editContact(editContactUrl) {
   formTitle.text("Edit Contact");

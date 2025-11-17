@@ -39,7 +39,7 @@
     <x-slot>
         <div class="row mb-3">
             <div class="col-lg-3">
-                <label for="gender-filter" class="form-label fw-semibold">Gender</label>
+                <label for="gender-filter" class="form-label fw-semibold"><i class="fa fa-filter"></i> Gender</label>
                 <select id="gender-filter" class="form-select shadow-sm" onchange="genderFilter(this)">
                     <option value="">All</option>
                     <option value="male">Male</option>
@@ -57,6 +57,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 <script>
+    const addContactUrl = "{{route('contacts.store')}}"
     const contactListUrl = "{{ route('contacts.list') }}"
     const fieldListUrl = "{{ route('custom.fields.items') }}"
     const customFieldsUrl = "{{route('custom.fields.show')}}"

@@ -15,7 +15,7 @@ class CustomFieldResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->customField->id,
             'field_label' => $this->customField->field_label,
             'field_type' => $this->customField->field_type,
             'value' => $this->value

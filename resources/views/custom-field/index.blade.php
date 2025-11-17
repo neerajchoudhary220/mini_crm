@@ -22,7 +22,7 @@
     <x-slot>
         <div class="row mb-3">
             <div class="col-lg-3">
-                <label for="field-type-filter" class="form-label fw-semibold">Gender</label>
+                <label for="field-type-filter" class="form-label fw-semibold"><i class="fa fa-filter"></i> Field Type</label>
                 <select id="field-type-filter" class="form-select shadow-sm" onchange="filedTypeFilter(this)">
                     <option value="">All</option>
                     <option value="text">Text</option>

@@ -13,22 +13,17 @@
         </li>
 
         <li class="nav-item">
-            <a @class(['nav-link','active'=>request()->is('contacts')]) href="{{ route('contacts') }}">
-                <i class="fa fa-users me-2"></i> Contacts
-            </a>
-        </li>
-
-        <li class="nav-item">
             <a @class(['nav-link','active'=>request()->is('custom-fields')]) href="{{route('custom.fields')}}">
                 <i class="fa fa-table me-2"></i> Custom Fields
             </a>
         </li>
 
-        <li class="nav-item mt-3">
-            <a class="nav-link text-danger" href="{{route('logout')}}">
-                <i class="fa fa-right-from-bracket me-2"></i> Logout
+        <li class="nav-item">
+            <a @class(['nav-link','active'=>request()->is('contacts')]) href="{{ route('contacts') }}">
+                <i class="fa fa-users me-2"></i> Contacts
             </a>
         </li>
+
 
     </ul>
 </div>

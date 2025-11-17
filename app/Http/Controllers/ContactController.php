@@ -95,7 +95,6 @@ class ContactController extends Controller
 
             //Delete old data
             $contact->customFieldValues()->delete();
-
             if ($contactUpdateRequest->custom) {
                 //delete old custom fields
                 foreach ($contactUpdateRequest->custom as $fieldId => $value) {

@@ -31,8 +31,8 @@ function saveContact() {
     success: function (res) {
       contactFormModal.modal("hide");
       $("#btnSave").prop("disabled", false).text("Save Contact");
-      reloadContactTable();
       showToast(res.message, "success");
+      reloadContactTable();
     },
     error: function (xhr) {
       $("#btnSave").prop("disabled", false).text("Save Contact");
@@ -51,6 +51,7 @@ $(document).ready(function () {
   $("#add-new-contact-btn").on("click", () => {
     resetContactForm();
     contactForm[0].reset();
+    contactForm.attr("action", addContactUrl);
     formTitle.text("Add Contact");
     saveBtn.text("Save");
 
