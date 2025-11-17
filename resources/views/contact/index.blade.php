@@ -85,9 +85,9 @@
     function generateFieldHTML(field, value = "") {
         let html = "";
         switch (field.field_type) {
-            case "Text":
-            case "Email":
-            case "Date":
+            case "text":
+            case "email":
+            case "date":
                 html = `
             <div class="mb-3 dynamic-field" id="field_${field.id}">
                 <label class="form-label">${field.field_label}</label>
@@ -99,7 +99,7 @@
             </div>`;
                 break;
 
-            case "Textarea":
+            case "textarea":
                 html = `
             <div class="mb-3 dynamic-field" id="field_${field.id}">
                 <label class="form-label">${field.field_label}</label>

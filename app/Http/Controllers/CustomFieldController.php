@@ -89,7 +89,6 @@ class CustomFieldController extends Controller
         }
     }
 
-
     public function show(ContactCustomField $contactCustomField)
     {
         return response()->json($contactCustomField);
